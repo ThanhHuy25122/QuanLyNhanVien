@@ -3,26 +3,30 @@
 // https://stackoverflow.com/questions/31224651/show-hide-password-onclick-of-button-using-javascript-only
 
 function show() {
-    var p = document.getElementById('pwd');
-    p.setAttribute('type', 'text');
+  var p = document.getElementById("pwd");
+  p.setAttribute("type", "text");
 }
 
 function hide() {
-    var p = document.getElementById('pwd');
-    p.setAttribute('type', 'password');
+  var p = document.getElementById("pwd");
+  p.setAttribute("type", "password");
 }
 
 var pwShown = 0;
 
-document.getElementById("eye").addEventListener("click", function () {
+document.getElementById("eye").addEventListener(
+  "click",
+  function () {
     if (pwShown == 0) {
-        pwShown = 1;
-        show();
+      pwShown = 1;
+      show();
     } else {
-        pwShown = 0;
-        hide();
+      pwShown = 0;
+      hide();
     }
-}, false);
+  },
+  false
+);
 
 //   font-family: 'Vibur', cursive;
 //   font-family: 'Abel', sans-serif;

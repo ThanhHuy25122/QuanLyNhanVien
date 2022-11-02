@@ -1,249 +1,259 @@
 /**
- * Project: Student Management (CRUD)
+ * Project: Personal Management (CRUD)
  * Features:
- *  + Create student
- *  + Read students
- *  + Delete student
- *  + Search student (id + name)
- *  + Update student
+ *  + Create personal
+ *  + Read personals
+ *  + Delete personal
+ *  + Search personal (id + name)
+ *  + Update personal
  *  + Validate form
  * Start project
  *  + (PM BA PO) write product requirements document (PRD)
  *  + designer
  *  + Front end => UI
  *  + phân rã lớp đối tượng
- *   (1 lớp SinhVien: maSV, tenSV, dob, email, khoá học, điểm toán, lý,hoá , tinhDiemTrungBinh)
+ *   (1 lớp Nhân viênên : tkNV , tenNV , email, password, ngày làm, lương CB, Chức vụ, giờ làm , Tổng Lương )
  *  + Testing (QC)
  *  + production
  */
 
-var studentList = [];
+var personalList = [];
 
 function validateForm() {
-  var studentId = document.getElementById("txtMaSV").value;
-  var studentName = document.getElementById("txtTenSV").value;
+  var personalAccount = document.getElementById("tkNV").value;
+  var personalName = document.getElementById("name").value;
 
   var isValid = true;
 
   isValid &=
-    required(studentId, "spanMaSV") && checkLength(studentId, "spanMaSV", 3, 9);
+    required(personalAccount, "spanMaNV") &&
+    checkLength(personalAccount, "spanMaNV", 4, 6);
   isValid &=
-    required(studentName, "spanTenSV") &&
-    checkStudentName(studentName, "spanTenSV");
-
+    required(personalName, "spanTenNV") &&
+    checkpersonalName(personalName, "spanTenNV");
   // nếu isValid = true, form đúng và ngược lại
   return isValid;
 }
 
-function createStudent() {
+function createPersonal() {
   // validate dữ liệu
+
   var isValid = validateForm();
   if (!isValid) return;
 
   // 1. lấy thông tin người dùng nhập từ input
-  var studentId = document.getElementById("txtMaSV").value;
-  var studentName = document.getElementById("txtTenSV").value;
-  var studentEmail = document.getElementById("txtEmail").value;
-  var studentDob = document.getElementById("txtNgaySinh").value;
-  var studentCourse = document.getElementById("khSV").value;
-  var studentMath = +document.getElementById("txtDiemToan").value;
-  var studentPhysic = +document.getElementById("txtDiemLy").value;
-  var studentChemistry = +document.getElementById("txtDiemHoa").value;
 
-  // 1.5. kiểm tra studentId có bị trùng ko
-  for (var i = 0; i < studentList.length; i++) {
-    if (studentList[i].studentId === studentId) {
-      alert("Mã sinh viên trùng lặp!!");
+  var personalAccount = document.getElementById("tkNV").value;
+  var personalName = document.getElementById("name").value;
+  var personalEmail = document.getElementById("email").value;
+  var personalPassword = document.getElementById("password").value;
+  var personalWorkDate = document.getElementById("datepicker").value;
+  var personalBasicSalary = +document.getElementById("luongCB").value;
+  var personalDuty = +document.getElementById("chucvu").value;
+  var personalWorkingTime = +document.getElementById("gioLam").value;
+
+  // 1.5. kiểm tra personalAccount có bị trùng ko
+  for (var i = 0; i < personalList.length; i++) {
+    if (personalList[i].personalAccount === personalAccount) {
+      alert("Tài khoản nhân viên trùng lặp!!");
       return;
     }
   }
 
-  // 2. tạo đối tượng sinh viên từ thông tin ngdung nhập
-  var student = new Student(
-    studentId,
-    studentName,
-    studentEmail,
-    studentDob,
-    studentCourse,
-    studentMath,
-    studentPhysic,
-    studentChemistry
+  // 2. tạo đối tượng nhân viên từ thông tin ngdung nhập
+  var personal = new Personal(
+    personalAccount,
+    personalName,
+    personalEmail,
+    personalPassword,
+    personalWorkDate,
+    personalBasicSalary,
+    personalDuty,
+    personalWorkingTime
   );
 
-  // 3. thêm sinh viên mới vào danh sách
-  studentList.push(student);
-  // in danh sách sinh viên ra bảng
-  renderStudents();
+  // 3. thêm nhân viên mới vào danh sách
+  personalList.push(personal);
+  // in danh sách nhân viên ra bảng
+  renderPersonals();
 
-  // lưu ds sinh viên xuống local storage
+  // lưu ds nhân viên xuống local storage
   saveData();
 }
 
-// studentList = [{}, {}, {}] => tr,tr,tr
-function renderStudents(data) {
-  if (!data) data = studentList;
+// personalList = [{}, {}, {}] => tr,tr,tr
+function renderPersonals(data) {
+  if (!data) data = personalList;
 
   var html = "";
   for (var i = 0; i < data.length; i++) {
     html += `
       <tr>
-        <td>${data[i].studentId}</td>
+        <td>${data[i].personalAccount}</td>
         <td>${data[i].fullName}</td>
         <td>${data[i].email}</td>
-        <td>${data[i].dob}</td>
-        <td>${data[i].course}</td>
-        <td>${data[i].calcGPA()}</td>
+        <td>${data[i].workDate}</td>
+        <td>${data[i].duty}</td>
+        <td>${data[i].totalSalary()}</td>
+        <td>${data[i].rating()}</td>
         <td>
-            <button onclick="deleteStudent('${
-              data[i].studentId
+            <button onclick="deletePersonal('${
+              data[i].personalAccount
             }')" class="btn btn-danger">Xoá</button>
 
-            <button onclick="getStudentDetail('${
-              data[i].studentId
-            }')" class="btn btn-info">Sửa</button>
+            <button onclick="getPersonalDetail('${
+              data[i].personalAccount
+            }')" class="btn btn-info" 
+            data-toggle="modal"
+            data-target="#myModal"
+            >Sửa</button>
         </td>
       </tr>`;
   }
-  document.getElementById("tbodySinhVien").innerHTML = html;
+  document.getElementById("tableDanhSach").innerHTML = html;
 }
 
 function saveData() {
   // chuyển từ một mảng object sang định dạng JSON
-  var studentListJSON = JSON.stringify(studentList);
+  var personalListJSON = JSON.stringify(personalList);
 
-  localStorage.setItem("SL", studentListJSON);
+  localStorage.setItem("SL", personalListJSON);
 }
 
 function getData() {
-  var studentListJSON = localStorage.getItem("SL");
+  var personalListJSON = localStorage.getItem("SL");
 
-  if (!studentListJSON) return;
+  if (!personalListJSON) return;
 
-  var studentListLocal = JSON.parse(studentListJSON);
-  studentList = mapData(studentListLocal);
+  var personalListLocal = JSON.parse(personalListJSON);
+  personalList = mapData(personalListLocal);
 
-  renderStudents();
+  renderPersonals();
 }
 
-// input: mảng sinh viên từ local => ouput: mảng sinh viên mới
+// input: mảng nhân viên từ local => ouput: mảng nhân viên mới
 function mapData(dataFromLocal) {
   var result = [];
   for (var i = 0; i < dataFromLocal.length; i++) {
-    var oldStudent = dataFromLocal[i];
-    var newStudent = new Student(
-      oldStudent.studentId,
-      oldStudent.fullName,
-      oldStudent.email,
-      oldStudent.dob,
-      oldStudent.course,
-      oldStudent.math,
-      oldStudent.physic,
-      oldStudent.chemistry
+    var oldPersonal = dataFromLocal[i];
+    var newPersonal = new Personal(
+      oldPersonal.personalAccount,
+      oldPersonal.fullName,
+      oldPersonal.email,
+      oldPersonal.password,
+      oldPersonal.workDate,
+      oldPersonal.basicSalary,
+      oldPersonal.duty,
+      oldPersonal.workingTime
     );
-    result.push(newStudent);
+    result.push(newPersonal);
   }
 
   return result;
 }
 
-function deleteStudent(studentId) {
-  var index = findById(studentId);
+function deletePersonal(personalAccount) {
+  var index = findByPersonal(personalAccount);
   if (index === -1) {
-    alert("Không tìm thấy id phù hợp.");
+    alert("Không tìm thấy account phù hợp.");
     return;
   }
-  studentList.splice(index, 1);
-  renderStudents();
+  personalList.splice(index, 1);
+  renderPersonals();
   saveData();
 }
 
-// input :id => output: index
-function findById(id) {
-  for (var i = 0; i < studentList.length; i++) {
-    if (studentList[i].studentId === id) {
+// input : account => output: index
+function findByPersonal(account) {
+  for (var i = 0; i < personalList.length; i++) {
+    if (personalList[i].personalAccount === account) {
       return i;
     }
   }
   return -1;
 }
 
-function searchStudents() {
+function searchPersonals() {
   var result = [];
   var keyword = document.getElementById("txtSearch").value;
 
-  for (var i = 0; i < studentList.length; i++) {
-    var currentStudentId = studentList[i].studentId;
-    var currentStudentName = studentList[i].fullName;
+  for (var i = 0; i < personalList.length; i++) {
+    var currentPersonalAccount = personalList[i].personalAccount;
+    var currentPersonalName = personalList[i].fullName;
 
-    if (currentStudentId === keyword || currentStudentName.includes(keyword)) {
-      result.push(studentList[i]);
+    if (
+      currentPersonalAccount === keyword ||
+      currentPersonalName.includes(keyword)
+    ) {
+      result.push(personalList[i]);
     }
   }
 
-  renderStudents(result);
+  renderPersonals(result);
 }
 
-// update 1: đưa thông tin của sinh viên muốn update lên form
-function getStudentDetail(studentId) {
-  var index = findById(studentId);
+// update 1: đưa thông tin của nhân viên muốn update lên form
+function getPersonalDetail(personalAccount) {
+  var index = findByPersonal(personalAccount);
   if (index === -1) {
     alert("Không tìm thấy id phù hợp.");
     return;
   }
-  var student = studentList[index];
+  var personal = personalList[index];
 
-  document.getElementById("txtMaSV").value = student.studentId;
-  document.getElementById("txtTenSV").value = student.fullName;
-  document.getElementById("txtEmail").value = student.email;
-  document.getElementById("txtNgaySinh").value = student.dob;
-  document.getElementById("khSV").value = student.course;
-  document.getElementById("txtDiemToan").value = student.math;
-  document.getElementById("txtDiemLy").value = student.physic;
-  document.getElementById("txtDiemHoa").value = student.chemistry;
+  document.getElementById("tkNV").value = personal.personalAccount;
+  document.getElementById("name").value = personal.fullName;
+  document.getElementById("email").value = personal.email;
+  document.getElementById("datepicker").value = personal.workDate;
+  document.getElementById("luongCB").value = personal.basicSalary;
+  document.getElementById("chucvu").value = personal.duty;
+  document.getElementById("gioLam").value = personal.workingTime;
 
-  document.getElementById("txtMaSV").disabled = true;
+  document.getElementById("tkNV").disabled = true;
 
-  document.getElementById("btnUpdate").style.display = "inline";
-  document.getElementById("btnCreate").style.display = "none";
+  document.getElementById("btnCapNhat").style.display = "inline";
+  document.getElementById("btnThemNV").style.display = "none";
 }
 
 // update 2: cho phép người dùng sửa trên form, người dùng nhấn nút lưu => cập nhật
-function updateStudent() {
-  var studentId = document.getElementById("txtMaSV").value;
-  var studentName = document.getElementById("txtTenSV").value;
-  var studentEmail = document.getElementById("txtEmail").value;
-  var studentDob = document.getElementById("txtNgaySinh").value;
-  var studentCourse = document.getElementById("khSV").value;
-  var studentMath = +document.getElementById("txtDiemToan").value;
-  var studentPhysic = +document.getElementById("txtDiemLy").value;
-  var studentChemistry = +document.getElementById("txtDiemHoa").value;
+function updatePersonal() {
+  var personalAccount = document.getElementById("tkNV").value;
+  var personalName = document.getElementById("name").value;
+  var personalEmail = document.getElementById("email").value;
+  var personalPassword = document.getElementById("password").value;
+  var personalWorkDate = document.getElementById("datepicker").value;
+  var personalBasicSalary = +document.getElementById("luongCB").value;
+  var personalDuty = +document.getElementById("chucvu").value;
+  var personalWorkingTime = +document.getElementById("gioLam").value;
 
-  var index = findById(studentId);
+  var index = findByPersonal(personalAccount);
 
   if (index === -1) {
-    alert("Không tìm thấy id phù hợp!");
+    alert("Không tìm thấy account phù hợp!");
     return;
+    z;
   }
 
-  var student = studentList[index];
+  var personal = personalList[index];
 
-  student.fullName = studentName;
-  student.email = studentEmail;
-  student.dob = studentDob;
-  student.course = studentCourse;
-  student.math = studentMath;
-  student.physic = studentPhysic;
-  student.chemistry = studentChemistry;
+  personal.fullName = personalName;
+  personal.email = personalEmail;
+  personal.password = personalPassword;
+  personal.workDate = personalWorkDate;
+  personal.basicSalary = personalBasicSalary;
+  personal.duty = personalDuty;
+  personal.workingTime = personalWorkingTime;
 
-  renderStudents();
+  renderPersonals();
 
   saveData();
 
-  document.getElementById("formQLSV").reset();
-  document.getElementById("txtMaSV").disabled = false;
+  document.getElementById("formQLNV").reset();
+  document.getElementById("tkNV").disabled = false;
 
-  document.getElementById("btnUpdate").style.display = "none";
-  document.getElementById("btnCreate").style.display = "block";
+  document.getElementById("btnThem").style.display = "block";
+  document.getElementById("btnCapNhat").style.display = "none";
+  document.getElementById("btnThemNV").style.display = "block";
 }
 
 window.onload = function () {
@@ -252,42 +262,54 @@ window.onload = function () {
   getData();
 };
 
-// ------------ VALIDATE FUNCTIONS --------------------
-// check required
+function resetForm() {
+  document.getElementById("tkNV").value = "";
+  document.getElementById("name").value = "";
+  document.getElementById("email").value = "";
+  document.getElementById("datepicker").value = "";
+  document.getElementById("luongCB").value = "";
+  document.getElementById("chucvu").value = "";
+  document.getElementById("gioLam").value = "";
+  document.getElementById("tkNV").disabled = false;
+}
 
-function required(value, spanId) {
+// ------------ VALIDATE FUNCTIONS -----------
+// check required---------
+
+function required(value, spanAccount) {
   if (value.length === 0) {
-    document.getElementById(spanId).innerHTML = "*Trường này bắt buộc nhập.";
+    document.getElementById(spanAccount).innerHTML =
+      "*Trường này bắt buộc nhập.";
     return false;
   }
 
-  document.getElementById(spanId).innerHTML = "";
+  document.getElementById(spanAccount).innerHTML = "";
   return true;
 }
 
 // check minlength - maxlength
-function checkLength(value, spanId, min, max) {
+function checkLength(value, spanAccount, min, max) {
   if (value.length < min || value.length > max) {
     document.getElementById(
-      spanId
+      spanAccount
     ).innerHTML = `*Độ dài phải từ ${min} tới ${max} kí tự`;
     return false;
   }
 
-  document.getElementById(spanId).innerHTML = "";
+  document.getElementById(spanAccount).innerHTML = "";
   return true;
 }
 
 // pattern
 // regular expression: biểu thức chính quy
 
-function checkStudentName(value, spanId) {
+function checkpersonalName(value, spanAccount) {
   var pattern = /^[A-z ]+$/g;
   if (pattern.test(value)) {
-    document.getElementById(spanId).innerHTML = "";
+    document.getElementById(spanAccount).innerHTML = "";
     return true;
   }
 
-  document.getElementById(spanId).innerHTML = "*Chỉ chấp nhận từ A-z";
+  document.getElementById(spanAccount).innerHTML = "*Chỉ chấp nhận từ A-z";
   return false;
 }
