@@ -26,8 +26,8 @@ function validateForm() {
   var isValid = true;
 
   isValid &=
-    required(personalAccount, "spanMaNV") &&
-    checkLength(personalAccount, "spanMaNV", 4, 6);
+    required(personalAccount, "tbTKNV") &&
+    checkLength(personalAccount, "tbTKNV", 4, 6);
   isValid &=
     required(personalName, "spanTenNV") &&
     checkpersonalName(personalName, "spanTenNV");
@@ -278,6 +278,7 @@ function resetForm() {
 
 function required(value, spanAccount) {
   if (value.length === 0) {
+    document.getElementById(spanAccount).style.display = "block";
     document.getElementById(spanAccount).innerHTML =
       "*Trường này bắt buộc nhập.";
     return false;
@@ -290,6 +291,7 @@ function required(value, spanAccount) {
 // check minlength - maxlength
 function checkLength(value, spanAccount, min, max) {
   if (value.length < min || value.length > max) {
+    document.getElementById(spanAccount).style.display = "block";
     document.getElementById(
       spanAccount
     ).innerHTML = `*Độ dài phải từ ${min} tới ${max} kí tự`;
