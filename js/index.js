@@ -1,16 +1,10 @@
 /**
- * Project: Personal Management (CRUD)
- * Features:
  *  + Create personal
  *  + Read personals
  *  + Delete personal
- *  + Search personal (id + name)
+ *  + Search personal (account + name)
  *  + Update personal
  *  + Validate form
- * Start project
- *  + (PM BA PO) write product requirements document (PRD)
- *  + designer
- *  + Front end => UI
  *  + phân rã lớp đối tượng
  *   (1 lớp Nhân viênên : tkNV , tenNV , email, password, ngày làm, lương CB, Chức vụ, giờ làm , Tổng Lương )
  *  + Testing (QC)
@@ -22,6 +16,12 @@ var personalList = [];
 function validateForm() {
   var personalAccount = document.getElementById("tkNV").value;
   var personalName = document.getElementById("name").value;
+  var personalEmail = document.getElementById("email").value;
+  var personalPassword = document.getElementById("password").value;
+  var personalWorkDate = document.getElementById("datepicker").value;
+  var personalBasicSalary = +document.getElementById("luongCB").value;
+  var personalDuty = +document.getElementById("chucvu").value;
+  var personalWorkingTime = +document.getElementById("gioLam").value;
 
   var isValid = true;
 
@@ -29,9 +29,32 @@ function validateForm() {
     required(personalAccount, "tbTKNV") &&
     checkLength(personalAccount, "tbTKNV", 4, 6);
   isValid &=
-    required(personalName, "spanTenNV") &&
-    checkpersonalName(personalName, "spanTenNV");
+    required(personalName, "tbTen") && checkPersonalName(personalName, "tbTen");
+  isValid &=
+    required(personalEmail, "tbEmail") &&
+    checkPersonalEmail(personalEmail, "tbEmail");
+  isValid &=
+    required(personalPassword, "tbMatKhau") &&
+    checkPersonalPassword(personalPassword, "tbMatKhau");
+  isValid &=
+    required(personalWorkDate, "tbNgay") &&
+    checkPersonalWorkDate(personalWorkDate, "tbNgay");
+  isValid &=
+    required(personalBasicSalary, "tbLuongCB") &&
+    checkPersonalBasicSalary(
+      personalBasicSalary,
+      "tbLuongCB",
+      1000000,
+      20000000
+    );
+  isValid &=
+    required(personalDuty, "tbChucVu") &&
+    checkPersonalDuty(personalDuty, "tbChucVu");
+  isValid &=
+    required(personalWorkingTime, "tbGiolam") &&
+    checkPersonalWorkingTime(personalWorkingTime, "tbGiolam", 80, 200);
   // nếu isValid = true, form đúng và ngược lại
+
   return isValid;
 }
 
@@ -75,9 +98,11 @@ function createPersonal() {
   // 3. thêm nhân viên mới vào danh sách
   personalList.push(personal);
   // in danh sách nhân viên ra bảng
+  // render dự liệu
   renderPersonals();
 
   // lưu ds nhân viên xuống local storage
+  // Lưu dự liệu
   saveData();
 }
 
@@ -93,7 +118,18 @@ function renderPersonals(data) {
         <td>${data[i].fullName}</td>
         <td>${data[i].email}</td>
         <td>${data[i].workDate}</td>
-        <td>${data[i].duty}</td>
+        `;
+    if (data[i].duty == 3) {
+      html += "<td> Sếp </td>";
+    }
+    if (data[i].duty == 2) {
+      html += "<td>Trưởng phòng</td>";
+    }
+    if (data[i].duty == 1) {
+      html += "<td>Nhân viên</td>";
+    }
+
+    html += `</td>
         <td>${data[i].totalSalary()}</td>
         <td>${data[i].rating()}</td>
         <td>
@@ -128,6 +164,7 @@ function getData() {
   var personalListLocal = JSON.parse(personalListJSON);
   personalList = mapData(personalListLocal);
 
+  // render dự liệu
   renderPersonals();
 }
 
@@ -159,7 +196,9 @@ function deletePersonal(personalAccount) {
     return;
   }
   personalList.splice(index, 1);
+  // render dự liệu
   renderPersonals();
+  // Lưu dự liệu
   saveData();
 }
 
@@ -175,14 +214,14 @@ function findByPersonal(account) {
 
 function searchPersonals() {
   var result = [];
-  var keyword = document.getElementById("txtSearch").value;
+  var keyword = document.getElementById("searchName").value;
 
   for (var i = 0; i < personalList.length; i++) {
     var currentPersonalAccount = personalList[i].personalAccount;
     var currentPersonalName = personalList[i].fullName;
 
     if (
-      currentPersonalAccount === keyword ||
+      currentPersonalAccount.includes(keyword) ||
       currentPersonalName.includes(keyword)
     ) {
       result.push(personalList[i]);
@@ -204,19 +243,31 @@ function getPersonalDetail(personalAccount) {
   document.getElementById("tkNV").value = personal.personalAccount;
   document.getElementById("name").value = personal.fullName;
   document.getElementById("email").value = personal.email;
+  document.getElementById("password").value = personal.password;
   document.getElementById("datepicker").value = personal.workDate;
   document.getElementById("luongCB").value = personal.basicSalary;
   document.getElementById("chucvu").value = personal.duty;
   document.getElementById("gioLam").value = personal.workingTime;
 
   document.getElementById("tkNV").disabled = true;
+  document.getElementById("tkNV").style.backgroundColor = "rgba(0,0,0,0.1)";
+
+  document.getElementById("password").type = "text";
 
   document.getElementById("btnCapNhat").style.display = "inline";
   document.getElementById("btnThemNV").style.display = "none";
 }
 
 // update 2: cho phép người dùng sửa trên form, người dùng nhấn nút lưu => cập nhật
+
 function updatePersonal() {
+  //varlidation update
+
+  var isValid = validateForm();
+  if (!isValid) return;
+
+  // input
+
   var personalAccount = document.getElementById("tkNV").value;
   var personalName = document.getElementById("name").value;
   var personalEmail = document.getElementById("email").value;
@@ -244,8 +295,10 @@ function updatePersonal() {
   personal.duty = personalDuty;
   personal.workingTime = personalWorkingTime;
 
+  // render dự liệu
   renderPersonals();
 
+  // Lưu dự liệu
   saveData();
 
   document.getElementById("formQLNV").reset();
@@ -254,6 +307,7 @@ function updatePersonal() {
   document.getElementById("btnThem").style.display = "block";
   document.getElementById("btnCapNhat").style.display = "none";
   document.getElementById("btnThemNV").style.display = "block";
+  document.getElementById("btnCapNhat").dataDismiss = "modal";
 }
 
 window.onload = function () {
@@ -262,15 +316,52 @@ window.onload = function () {
   getData();
 };
 
+// Đặt lại form
+
 function resetForm() {
+  // Nội dung Personal
+
   document.getElementById("tkNV").value = "";
   document.getElementById("name").value = "";
   document.getElementById("email").value = "";
+  document.getElementById("password").value = "";
   document.getElementById("datepicker").value = "";
   document.getElementById("luongCB").value = "";
   document.getElementById("chucvu").value = "";
   document.getElementById("gioLam").value = "";
   document.getElementById("tkNV").disabled = false;
+  document.getElementById("password").type = "password";
+
+  // id
+
+  document.getElementById("tkNV").style.backgroundColor = "transparent";
+
+  // Ẩn nút cập nhật
+
+  document.getElementById("btnCapNhat").style.display = "none";
+  document.getElementById("btnThemNV").style.display = "inline-block";
+
+  // Content Thông báo
+
+  document.getElementById("tbTKNV").innerHTML = "";
+  document.getElementById("tbTen").innerHTML = "";
+  document.getElementById("tbEmail").innerHTML = "";
+  document.getElementById("tbMatKhau").innerHTML = "";
+  document.getElementById("tbNgay").innerHTML = "";
+  document.getElementById("tbLuongCB").innerHTML = "";
+  document.getElementById("tbChucVu").innerHTML = "";
+  document.getElementById("tbGiolam").innerHTML = "";
+
+  // display Thông báo
+
+  document.getElementById("tbTKNV").style.display = "none";
+  document.getElementById("tbTen").style.display = "none";
+  document.getElementById("tbEmail").style.display = "none";
+  document.getElementById("tbMatKhau").style.display = "none";
+  document.getElementById("tbNgay").style.display = "none";
+  document.getElementById("tbLuongCB").style.display = "none";
+  document.getElementById("tbChucVu").style.display = "none";
+  document.getElementById("tbGiolam").style.display = "none";
 }
 
 // ------------ VALIDATE FUNCTIONS -----------
@@ -278,7 +369,7 @@ function resetForm() {
 
 function required(value, spanAccount) {
   if (value.length === 0) {
-    document.getElementById(spanAccount).style.display = "block";
+    document.getElementById(spanAccount).style.display = "inline-block";
     document.getElementById(spanAccount).innerHTML =
       "*Trường này bắt buộc nhập.";
     return false;
@@ -291,7 +382,7 @@ function required(value, spanAccount) {
 // check minlength - maxlength
 function checkLength(value, spanAccount, min, max) {
   if (value.length < min || value.length > max) {
-    document.getElementById(spanAccount).style.display = "block";
+    document.getElementById(spanAccount).style.display = "inline-block";
     document.getElementById(
       spanAccount
     ).innerHTML = `*Độ dài phải từ ${min} tới ${max} kí tự`;
@@ -305,13 +396,101 @@ function checkLength(value, spanAccount, min, max) {
 // pattern
 // regular expression: biểu thức chính quy
 
-function checkpersonalName(value, spanAccount) {
-  var pattern = /^[A-z ]+$/g;
+function checkPersonalName(value, spanAccount) {
+  var pattern =
+    /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s\W|_]+$/g;
+  if (pattern.test(value)) {
+    document.getElementById(spanAccount).innerHTML = "";
+    return true;
+  }
+  document.getElementById(spanAccount).style.display = "inline-block";
+
+  document.getElementById(spanAccount).innerHTML =
+    "*Không có ký tự đặc biệt & số";
+  return false;
+}
+// Test Email
+
+function checkPersonalEmail(value, spanAccount) {
+  var pattern =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g;
+  if (pattern.test(value)) {
+    document.getElementById(spanAccount).innerHTML = "";
+    return true;
+  }
+  document.getElementById(spanAccount).style.display = "inline-block";
+  document.getElementById(spanAccount).innerHTML = "*Nhập đúng định dạng email";
+  return false;
+}
+
+// Test password
+
+function checkPersonalPassword(value, spanAccount) {
+  var pattern =
+    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
   if (pattern.test(value)) {
     document.getElementById(spanAccount).innerHTML = "";
     return true;
   }
 
-  document.getElementById(spanAccount).innerHTML = "*Chỉ chấp nhận từ A-z";
+  document.getElementById(spanAccount).style.display = "inline-block";
+  document.getElementById(spanAccount).innerHTML =
+    "*Nhập password từ 8 đến 15 ký tự trong đó có ít nhất một chữ cái thường, một chữ cái viết hoa, một chữ số và một ký tự đặc biệt";
   return false;
+}
+
+// Test workDate
+
+function checkPersonalWorkDate(value, spanAccount) {
+  var pattern = /^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$/g;
+  if (pattern.test(value)) {
+    document.getElementById(spanAccount).innerHTML = "";
+    return true;
+  }
+
+  document.getElementById(spanAccount).style.display = "inline-block";
+  document.getElementById(spanAccount).innerHTML = "*Định dạng mm/dd/yyyy";
+  return false;
+}
+
+// Test basicSalary
+
+function checkPersonalBasicSalary(value, spanAccount, min, max) {
+  if (value < min || value > max) {
+    document.getElementById(spanAccount).style.display = "inline-block";
+    document.getElementById(
+      spanAccount
+    ).innerHTML = `*Lương phải từ ${min} $ tới ${max} $`;
+    return false;
+  }
+
+  document.getElementById(spanAccount).innerHTML = "";
+  return true;
+}
+
+// Test duty
+
+function checkPersonalDuty(value, spanAccount) {
+  if (!value) {
+    document.getElementById(spanAccount).style.display = "inline-block";
+    document.getElementById(spanAccount).innerHTML = `Phải chọn chức vụ hợp lệ`;
+    return false;
+  }
+  document.getElementById(spanAccount).innerHTML = "";
+  return true;
+}
+
+// Test workingTime
+
+function checkPersonalWorkingTime(value, spanAccount, min, max) {
+  if (value < min || value > max) {
+    document.getElementById(spanAccount).style.display = "inline-block";
+    document.getElementById(
+      spanAccount
+    ).innerHTML = `*Só giờ phải từ ${min} h tới ${max} h`;
+    return false;
+  }
+
+  document.getElementById(spanAccount).innerHTML = "";
+  return true;
 }
