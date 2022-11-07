@@ -78,7 +78,8 @@ function createPersonal() {
   // 1.5. kiểm tra personalAccount có bị trùng ko
   for (var i = 0; i < personalList.length; i++) {
     if (personalList[i].personalAccount === personalAccount) {
-      alert("Tài khoản nhân viên trùng lặp!!");
+      document.getElementById("tbTKNV").display.style = "inline-block";
+      document.getElementById("tbTKNV").innerHTML = "Tài khoản đã tồn tại";
       return;
     }
   }
