@@ -283,7 +283,6 @@ function updatePersonal() {
   if (index === -1) {
     alert("Không tìm thấy account phù hợp!");
     return;
-    z;
   }
 
   var personal = personalList[index];
@@ -308,7 +307,6 @@ function updatePersonal() {
   document.getElementById("btnThem").style.display = "block";
   document.getElementById("btnCapNhat").style.display = "none";
   document.getElementById("btnThemNV").style.display = "block";
-  document.getElementById("btnCapNhat").dataDismiss = "modal";
 }
 
 window.onload = function () {
