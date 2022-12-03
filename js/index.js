@@ -234,6 +234,7 @@ function searchPersonals() {
 
 // update 1: đưa thông tin của nhân viên muốn update lên form
 function getPersonalDetail(personalAccount) {
+  resetForm();
   var index = findByPersonal(personalAccount);
   if (index === -1) {
     alert("Không tìm thấy id phù hợp.");
